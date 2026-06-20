@@ -50,10 +50,7 @@ def generate_reasoning(
     if components["behavioral_multiplier"] < 0.8:
         gaps.append("Low recent engagement or responsiveness")
     if components["penalties"] < 0:
-        if "IT Services" in reasoning[0]:  # simple heuristic check
-            gaps.append("Entire career at IT services firms (-0.35 penalty applied)")
-        else:
-            gaps.append(f"Disqualifier penalty applied ({components['penalties']})")
+        gaps.append(f"Disqualifier penalty applied ({components['penalties']})")
             
     if gaps:
         reasoning.append("Considerations: " + ", ".join(gaps) + ".")

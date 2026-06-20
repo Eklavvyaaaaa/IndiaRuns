@@ -71,7 +71,7 @@ def validate_temporal_claim(skill_name: str, claimed_months_ago: float, duration
     # Calculate the inferred start date in months relative to year 0
     ref_months = REFERENCE_DATE.year * 12 + REFERENCE_DATE.month
     inferred_start_months = ref_months - claimed_months_ago - duration_months
-    inferred_start_ym = (int(inferred_start_months // 12), int(inferred_start_months % 12) or 1)
+    inferred_start_ym = (int((inferred_start_months - 1) // 12), int((inferred_start_months - 1) % 12) + 1)
     
     for skill_key, launch_str in SKILL_LAUNCH_DATES.items():
         if skill_key in skill_lower:

@@ -10,12 +10,13 @@ partial credit if the graph shows a strong edge between them — because
 the skill is transferable.
 """
 
-import pickle
+import json
 from collections import Counter
 from pathlib import Path
 from typing import Optional
 
 import networkx as nx
+from networkx.readwrite import json_graph
 
 from src.config import JD_RELEVANT_SKILL_NAMES
 
@@ -132,7 +133,7 @@ def score_skill_transfer(candidate_skills: list[str],
         max_hops: Maximum graph distance to consider for transfer (default 2)
     
     Returns:
-        Score 0.0–1.0 representing skill transferability
+        Score 0.0-1.0 representing skill transferability
     """
     if not jd_skills:
         return 0.5  # No JD skills to compare against
@@ -144,10 +145,9 @@ def score_skill_transfer(candidate_skills: list[str],
     total_jd_skills = 0
     
     for jd_skill in jd_skills:
+        total_jd_skills += 1
         if jd_skill not in graph:
             continue  # Skip skills not in the graph
-        
-        total_jd_skills += 1
         
         # Direct match
         if jd_skill in candidate_skill_set:
@@ -216,23 +216,25 @@ def get_related_skills(skill_name: str, graph: nx.Graph, top_n: int = 10) -> lis
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def save_skill_graph(graph: nx.Graph, path: str) -> None:
-    """Save the skill graph to a pickle file."""
+    """Save the skill graph to a JSON file."""
     filepath = Path(path)
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    with open(filepath, "wb") as f:
-        pickle.dump(graph, f)
+    data = json_graph.node_link_data(graph)
+    with open(filepath, "w") as f:
+        json.dump(data, f)
     size_kb = filepath.stat().st_size / 1024
     print(f"  Saved skill graph to {filepath} ({size_kb:.0f} KB)")
 
 
 def load_skill_graph(path: str) -> nx.Graph:
-    """Load the skill graph from a pickle file."""
+    """Load the skill graph from a JSON file."""
     filepath = Path(path)
     if not filepath.exists():
         raise FileNotFoundError(f"Skill graph file not found: {path}")
     
-    with open(filepath, "rb") as f:
-        graph = pickle.load(f)
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    graph = json_graph.node_link_graph(data)
     
     print(f"  Loaded skill graph: {graph.number_of_nodes()} nodes, "
           f"{graph.number_of_edges()} edges")
@@ -254,7 +256,7 @@ if __name__ == "__main__":
     graph = build_skill_graph(candidates, min_edge_weight=2)
     
     # Show some stats
-    print(f"\nGraph stats:")
+    print("\nGraph stats:")
     print(f"  Nodes (unique skills): {graph.number_of_nodes()}")
     print(f"  Edges (co-occurrences): {graph.number_of_edges()}")
     
@@ -264,7 +266,7 @@ if __name__ == "__main__":
         key=lambda x: x[1].get("frequency", 0),
         reverse=True
     )[:15]
-    print(f"\nTop 15 skills by frequency:")
+    print("\nTop 15 skills by frequency:")
     for skill, data in skills_by_freq:
         print(f"  {skill}: {data.get('frequency', 0)} candidates")
     
@@ -279,7 +281,7 @@ if __name__ == "__main__":
     
     # Test skill transfer scoring
     jd_skills = get_jd_skills()
-    print(f"\nSkill transfer scores for first 5 candidates:")
+    print("\nSkill transfer scores for first 5 candidates:")
     for c in candidates[:5]:
         cand_skills = [s["name"].lower().strip() for s in c.get("skills", [])]
         score = score_skill_transfer(cand_skills, jd_skills, graph)

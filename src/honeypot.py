@@ -76,16 +76,15 @@ def compute_honeypot_score(candidate: dict) -> float:
         for s in candidate.get("skills", []):
             dur = s.get("duration_months", 0)
             validity = validate_temporal_claim(s.get("name", ""), months_since, dur)
-            if validity == 0.0:
-                temporal_score = 1.0
-                break
+            if validity < 1.0:
+                temporal_score = max(temporal_score, 1.0 - validity)
     except ImportError:
         pass
         
     # Take max (any single hard fail triggers the honeypot)
     return max(score1, score2, score3, temporal_score)
 
-def is_likely_honeypot(candidate: dict, threshold: float = None) -> bool:
+def is_likely_honeypot(candidate: dict, threshold: float | None = None) -> bool:
     """Return True if the candidate is considered a honeypot."""
     if threshold is None:
         threshold = HONEYPOT_CONFIG["honeypot_score_threshold"]

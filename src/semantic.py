@@ -88,7 +88,7 @@ def compute_semantic_scores(candidate_embeddings: np.ndarray,
     Compute cosine similarity between all candidate embeddings and the JD embedding.
     
     Since embeddings are L2-normalized, cosine similarity = dot product.
-    This is very fast — ~2 seconds for 100K × 384 on CPU.
+    This is very fast — ~2 seconds for 100K * 384 on CPU.
     
     Args:
         candidate_embeddings: (N, D) array of candidate embeddings
@@ -115,6 +115,8 @@ def get_top_k_indices(scores: np.ndarray, k: int = SEMANTIC_TOP_K) -> np.ndarray
     Returns:
         (K,) array of indices, sorted by score descending
     """
+    if k <= 0 or len(scores) == 0:
+        return np.array([], dtype=int)
     k = min(k, len(scores))
     
     # argpartition is O(N) — much faster than argsort for large N
@@ -196,7 +198,7 @@ if __name__ == "__main__":
     scores = compute_semantic_scores(embeddings, jd_emb)
     
     # Show results
-    print(f"\nSemantic similarity scores (vs mock JD):")
+    print("\nSemantic similarity scores (vs mock JD):")
     for i, c in enumerate(candidates):
         cid = c["candidate_id"]
         title = c["profile"]["current_title"]
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     
     # Get top-K
     top_indices = get_top_k_indices(scores, k=5)
-    print(f"\nTop 5 by semantic score:")
+    print("\nTop 5 by semantic score:")
     for idx in top_indices:
         c = candidates[idx]
         print(f"  #{idx+1}: {c['candidate_id']} ({c['profile']['current_title']}) — {scores[idx]:.4f}")

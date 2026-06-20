@@ -12,6 +12,7 @@ import numpy as np
 from src.config import PENALTIES, BLINDSPOT_BOOST_FACTOR
 from src.skill_graph import score_skill_transfer
 from src.feature_extractor import SkillClaim
+import re
 
 def compute_ats_baseline(candidate: dict, features: dict, jd_skills: list[str]) -> float:
     """
@@ -21,6 +22,7 @@ def compute_ats_baseline(candidate: dict, features: dict, jd_skills: list[str]) 
     if not jd_skills:
         return 0.5
         
+    jd_skills = [s.lower().strip() for s in jd_skills]
     cand_skill_names = [s.get("name", "").lower().strip() for s in candidate.get("skills", [])]
     cand_skill_set = set(cand_skill_names)
     
@@ -30,7 +32,7 @@ def compute_ats_baseline(candidate: dict, features: dict, jd_skills: list[str]) 
     
     # 2. Title exact match
     title = candidate.get("profile", {}).get("current_title", "").lower()
-    title_score = 1.0 if any(t in title for t in ["ai", "ml", "machine learning", "data scientist"]) else 0.2
+    title_score = 1.0 if re.search(r'\b(ai|ml|machine learning|data scientist)\b', title) else 0.2
     
     return keyword_score * 0.7 + title_score * 0.3
 
@@ -67,6 +69,8 @@ def compute_final_score(
     Returns: (final_score, component_scores_dict)
     """
     from src.decay import apply_decay_batch
+    
+    jd_skills = [s.lower().strip() for s in jd_skills]
     
     # 1. Semantic Fit (passed in directly)
     norm_semantic = max(0.0, min(1.0, (semantic_score + 1) / 2)) # map [-1,1] to [0,1]

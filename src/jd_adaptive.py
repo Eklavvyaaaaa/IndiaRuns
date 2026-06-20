@@ -42,7 +42,7 @@ def derive_weights(jd_text: str) -> dict[str, float]:
         if strength > 0:
             deltas = SIGNAL_DELTAS.get(signal_name, {})
             for dim, delta in deltas.items():
-                weights[dim] += delta * strength
+                weights[dim] = weights.get(dim, 0.0) + delta * strength
                 
     # 3. Apply floor
     for dim in weights:
