@@ -1,0 +1,40 @@
+# Data files (too large for git)
+candidates.jsonl
+candidates.jsonl.gz
+sample_candidates.json
+
+# Pre-computed artifacts
+artifacts/
+
+# Provided docs (not needed in repo)
+*.docx
+*.txt
+!requirements.txt
+!README.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Byte-compiled
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
