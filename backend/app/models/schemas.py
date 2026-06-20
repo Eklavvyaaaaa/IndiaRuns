@@ -25,6 +25,8 @@ class BlindSpot(BaseModel):
 class RankedCandidate(BaseModel):
     candidate_id: str
     anonymized_name: str
+    title: str
+    summary: str
     scores: CandidateScores
     blindspot: BlindSpot
     reasoning: List[str]

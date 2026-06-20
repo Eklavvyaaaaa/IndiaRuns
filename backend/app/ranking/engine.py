@@ -7,6 +7,7 @@ from app.ranking.skill_trust import SkillTrustLayer
 from app.ranking.behavioral import BehavioralIntelligenceLayer
 from app.ranking.career_quality import CareerQualityLayer
 from app.ranking.consistency import ConsistencyLayer
+from app.ranking.role_alignment import RoleAlignmentLayer
 from app.ranking.honeypot import HoneypotDetector
 from app.ranking.blindspot import BlindSpotEngine
 from app.ranking.reasoner import ReasoningEngine
@@ -20,6 +21,7 @@ class RankingEngine:
         self.behavioral = BehavioralIntelligenceLayer()
         self.career_quality = CareerQualityLayer()
         self.consistency = ConsistencyLayer()
+        self.role_alignment = RoleAlignmentLayer()
         self.honeypot = HoneypotDetector()
         self.blindspot = BlindSpotEngine()
         self.reasoner = ReasoningEngine()
@@ -48,8 +50,12 @@ class RankingEngine:
             # Semantic score from FAISS (cosine sim 0 to 1 -> 0 to 100)
             semantic_fit = max(0.0, min(100.0, sem_score * 100.0))
             
-            # 2. Honeypot check
-            is_honeypot, penalty = self.honeypot.detect(row)
+            # 2. Honeypot & Role Alignment check
+            is_honeypot, hp_penalty = self.honeypot.detect(row)
+            
+            cand_title = row.get("title", "")
+            cand_summary = row.get("summary", "")
+            role_penalty, role_warnings = self.role_alignment.penalize(jd_text, cand_title, cand_summary)
             
             # 3. Compute other layers
             ri_score = self.retrieval.score(row)
@@ -68,7 +74,7 @@ class RankingEngine:
                 (bi_score * 0.10) +
                 (cq_score * 0.10) +
                 (cs_score * 0.05)
-            ) - penalty
+            ) - hp_penalty - role_penalty
             
             final_score = max(0.0, final_score)
             
@@ -81,7 +87,8 @@ class RankingEngine:
                 "behavioral_intelligence": round(bi_score, 1),
                 "career_quality": round(cq_score, 1),
                 "consistency": round(cs_score, 1),
-                "honeypot_penalty": round(penalty, 1)
+                "honeypot_penalty": round(hp_penalty, 1),
+                "role_penalty": round(role_penalty, 1)
             }
             
             # 4. Blindspot
@@ -90,9 +97,15 @@ class RankingEngine:
             # 5. Reasoning
             reasons = self.reasoner.generate(row, scores)
             
+            if role_warnings:
+                for w in role_warnings:
+                    reasons.append(f"WARNING: {w}")
+            
             results.append({
                 "candidate_id": row["candidate_id"],
                 "anonymized_name": row["anonymized_name"],
+                "title": row.get("title", "Candidate"),
+                "summary": row.get("summary", ""),
                 "scores": scores,
                 "blindspot": bs,
                 "reasoning": reasons,

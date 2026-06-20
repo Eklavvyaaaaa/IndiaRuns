@@ -43,7 +43,8 @@ export default function Rankings() {
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-xl font-semibold text-white">{cand.anonymized_name}</h2>
-                  <p className="text-sm text-slate-400 font-mono mt-1">{cand.candidate_id}</p>
+                  <h3 className="text-md text-blue-400 font-medium mt-1">{cand.title}</h3>
+                  <p className="text-sm text-slate-400 font-mono mt-0.5">{cand.candidate_id}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-black bg-gradient-to-br from-green-400 to-emerald-600 bg-clip-text text-transparent">
@@ -52,12 +53,21 @@ export default function Rankings() {
                   <div className="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">Final Score</div>
                 </div>
               </div>
+              
+              {cand.summary && (
+                <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 text-sm text-slate-300 italic leading-relaxed">
+                  "{cand.summary}"
+                </div>
+              )}
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-800">
-                <Metric label="Semantic Fit" value={cand.scores.semantic_fit} />
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 pt-4 border-t border-slate-800">
+                <Metric label="Semantic" value={cand.scores.semantic_fit} />
                 <Metric label="Retrieval" value={cand.scores.retrieval_intelligence} />
                 <Metric label="Prod Ready" value={cand.scores.production_readiness} />
                 <Metric label="Skill Trust" value={cand.scores.skill_trust} />
+                <Metric label="Behavioral" value={cand.scores.behavioral_intelligence} />
+                <Metric label="Career" value={cand.scores.career_quality} />
+                <Metric label="Consistency" value={cand.scores.consistency} />
               </div>
               
               <div className="bg-slate-950 rounded-lg p-4 mt-4">
