@@ -15,6 +15,7 @@ class CandidateScores(BaseModel):
     career_quality: float
     consistency: float
     honeypot_penalty: float
+    role_penalty: float
 
 class BlindSpot(BaseModel):
     ats_score: float

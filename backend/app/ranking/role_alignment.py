@@ -1,5 +1,7 @@
 import re
 
+from typing import Tuple, List
+
 class RoleAlignmentLayer:
     def __init__(self):
         # Define mutually exclusive job families with extensive synonyms
@@ -50,7 +52,7 @@ class RoleAlignmentLayer:
                 matched.add(family)
         return matched
 
-    def penalize(self, jd_text: str, candidate_title: str, candidate_summary: str) -> tuple[float, list[str]]:
+    def penalize(self, jd_text: str, candidate_title: str, candidate_summary: str) -> Tuple[float, List[str]]:
         """
         Returns a penalty score and a list of warning reasons.
         Includes robust edge-case handling for job family mismatches and experience levels.

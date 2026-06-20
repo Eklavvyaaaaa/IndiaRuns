@@ -28,9 +28,19 @@ class RankingEngine:
         
         # Load candidate features
         import os
+        import numpy as np
+        
         parquet_path = os.path.join(artifacts_dir, "candidate_features.parquet")
+        emb_path = os.path.join(artifacts_dir, "embeddings.npy")
+        
         if os.path.exists(parquet_path):
             self.df = pl.read_parquet(parquet_path)
+            
+            # Validate embeddings match dataframe
+            if os.path.exists(emb_path):
+                emb_len = len(np.load(emb_path, mmap_mode='r'))
+                if emb_len != len(self.df):
+                    raise ValueError(f"Data corruption: Found {emb_len} embeddings but {len(self.df)} candidates in Parquet. Please re-run precompute.py.")
         else:
             self.df = None
 

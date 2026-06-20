@@ -76,6 +76,12 @@ def main():
         with open(args.data, "r", encoding="utf-8") as f:
             candidates_list = json.load(f)
             
+    if not isinstance(candidates_list, list):
+        raise TypeError(f"Data format error: Expected a top-level JSON list in {args.data}, but got {type(candidates_list).__name__}.")
+        
+    if not candidates_list:
+        raise ValueError(f"No candidates loaded from {args.data}. Please check the file contents.")
+            
     print(f"Loaded {len(candidates_list)} candidates.")
     
     # 1. Build Texts

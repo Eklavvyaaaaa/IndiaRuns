@@ -28,9 +28,14 @@ def main():
     
     # 1. Load data
     print("[1/4] Loading candidate data...")
-    candidates = load_candidates_batch(args.data)
-    if args.limit:
-        candidates = candidates[:args.limit]
+    candidates = load_candidates_batch(args.data, max_candidates=args.limit)
+    
+    if not isinstance(candidates, list):
+        raise TypeError(f"Invalid format: Expected a top-level JSON list, but got {type(candidates).__name__}.")
+        
+    if not candidates:
+        raise ValueError(f"No candidates found in {args.data}. Ensure the file is not empty and properly formatted.")
+        
     print(f"  Loaded {len(candidates)} candidates.")
     
     # 2. Build and save Skill Graph
