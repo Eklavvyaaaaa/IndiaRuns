@@ -58,6 +58,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, default="../candidates.jsonl", help="Path to candidates data")
     parser.add_argument("--out-dir", type=str, default="artifacts", help="Output directory for artifacts")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of candidates processed")
     args = parser.parse_args()
     
     os.makedirs(args.out_dir, exist_ok=True)
@@ -72,9 +73,13 @@ def main():
             for line in f:
                 if line.strip():
                     candidates_list.append(json.loads(line))
+                    if args.limit and len(candidates_list) >= args.limit:
+                        break
     else:
         with open(args.data, "r", encoding="utf-8") as f:
             candidates_list = json.load(f)
+            if args.limit:
+                candidates_list = candidates_list[:args.limit]
             
     if not isinstance(candidates_list, list):
         raise TypeError(f"Data format error: Expected a top-level JSON list in {args.data}, but got {type(candidates_list).__name__}.")
