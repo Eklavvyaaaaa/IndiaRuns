@@ -12,7 +12,7 @@ engine_instance = None
 def get_engine():
     global engine_instance
     if engine_instance is None:
-        engine_instance = RankingEngine("backend/artifacts")
+        engine_instance = RankingEngine("artifacts")
     return engine_instance
 
 @router.post("/rank", response_model=RankResponse)

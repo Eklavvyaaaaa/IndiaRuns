@@ -17,8 +17,6 @@ function App() {
               <div className="flex gap-4 text-sm font-medium text-slate-300">
                 <Link to="/" className="hover:text-white transition-colors">Dashboard</Link>
                 <Link to="/rankings" className="hover:text-white transition-colors">Rankings</Link>
-                <Link to="/hidden-gems" className="hover:text-white transition-colors">Hidden Gems</Link>
-                <Link to="/honeypots" className="hover:text-white transition-colors text-red-400 hover:text-red-300">Honeypots</Link>
               </div>
             </div>
           </div>

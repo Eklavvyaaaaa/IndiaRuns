@@ -7,7 +7,12 @@ export default function Rankings() {
   useEffect(() => {
     const data = localStorage.getItem('rankingResults')
     if (data) {
-      setResults(JSON.parse(data))
+      try {
+        setResults(JSON.parse(data))
+      } catch (err) {
+        console.error("Failed to parse ranking results:", err)
+        setResults(null)
+      }
     }
   }, [])
 

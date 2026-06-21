@@ -60,8 +60,8 @@ class RankingEngine:
             # Semantic score from FAISS (cosine sim 0 to 1 -> 0 to 100)
             semantic_fit = max(0.0, min(100.0, sem_score * 100.0))
             
-            # 2. Honeypot & Role Alignment check
-            is_honeypot, hp_penalty = self.honeypot.detect(row)
+            # 2. Data Integrity & Role Alignment check
+            is_quarantined, hp_penalty, profile_reliability = self.honeypot.detect(row)
             
             cand_title = row.get("title", "")
             cand_summary = row.get("summary", "")
@@ -86,6 +86,9 @@ class RankingEngine:
                 (cs_score * 0.05)
             ) - hp_penalty - role_penalty
             
+            if is_quarantined:
+                final_score = 0.0
+                
             final_score = max(0.0, final_score)
             
             scores = {
@@ -97,6 +100,7 @@ class RankingEngine:
                 "behavioral_intelligence": round(bi_score, 1),
                 "career_quality": round(cq_score, 1),
                 "consistency": round(cs_score, 1),
+                "profile_reliability": round(profile_reliability * 100.0, 1),
                 "honeypot_penalty": round(hp_penalty, 1),
                 "role_penalty": round(role_penalty, 1)
             }
@@ -119,7 +123,7 @@ class RankingEngine:
                 "scores": scores,
                 "blindspot": bs,
                 "reasoning": reasons,
-                "is_honeypot": is_honeypot
+                "is_honeypot": is_quarantined
             })
             
         # Sort by final score

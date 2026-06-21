@@ -10,8 +10,8 @@ export default function Dashboard() {
   const handleRank = async () => {
     setLoading(true)
     try {
-      // In production, point to the FastAPI endpoint
-      const response = await axios.post('http://localhost:8000/api/v1/rank', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/rank'
+      const response = await axios.post(apiUrl, {
         job_description: jd,
         top_k: 100
       })

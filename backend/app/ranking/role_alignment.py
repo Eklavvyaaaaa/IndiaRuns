@@ -1,23 +1,17 @@
+import json
 import re
-
+import os
 from typing import Tuple, List
 
 class RoleAlignmentLayer:
     def __init__(self):
-        # Define mutually exclusive job families with extensive synonyms
-        self.families = {
-            "engineering": {"engineer", "developer", "programmer", "architect", "scientist", "researcher", "sde", "swe", "mlops", "devops"},
-            "product": {"product manager", "project manager", "program manager", "product owner", "scrum master", "agile coach", "delivery manager", "pm"},
-            "sales_marketing": {"sales", "account executive", "marketing", "growth", "bd", "business development"},
-            "hr_recruiting": {"recruiter", "talent acquisition", "hr", "human resources", "sourcer", "people ops"}
-        }
-        
-        # Terms indicating side-projects or learning rather than production experience
-        self.tourist_terms = {
-            "side project", "side-project", "playing with", "experimenting with", 
-            "taking online courses", "self-learner", "bootcamp", "just learning", 
-            "exploring", "tinkering", "hobby"
-        }
+        # Load centralized taxonomy
+        config_path = os.path.join(os.path.dirname(__file__), "../../config/taxonomy.json")
+        with open(config_path, "r") as f:
+            self.taxonomy = json.load(f)
+            
+        self.families = {k: set(v["synonyms"]) for k, v in self.taxonomy["families"].items()}
+        self.tourist_terms = set(self.taxonomy["tourist_terms"])
 
     def _extract_jd_primary_family(self, jd_text: str) -> str:
         """
@@ -47,7 +41,6 @@ class RoleAlignmentLayer:
         """Returns all job families that the candidate's title matches."""
         matched = set()
         for family, terms in self.families.items():
-            # Use word boundaries to avoid matching 'pm' in 'development'
             if any(re.search(rf'\b{re.escape(t)}\b', title_lower) for t in terms):
                 matched.add(family)
         return matched
@@ -70,9 +63,19 @@ class RoleAlignmentLayer:
         if jd_family != "unknown" and cand_families:
             if jd_family not in cand_families:
                 # E.g. JD is engineering, but candidate is pure product
-                penalty += 50.0
-                cand_fam_str = "/".join(cand_families).title()
-                warnings.append(f"Major job family mismatch: Candidate is in {cand_fam_str} while JD requires {jd_family.title()}.")
+                # To be less strict for "adjacent" tech roles, we check if both are in "technical_families"
+                jd_is_tech = jd_family in self.taxonomy["technical_families"]
+                cand_is_tech = any(f in self.taxonomy["technical_families"] for f in cand_families)
+                
+                if jd_is_tech and not cand_is_tech:
+                    penalty += 70.0 # Non-technical candidate applying for technical role
+                elif not jd_is_tech and cand_is_tech:
+                    penalty += 50.0 # Technical applying for non-technical
+                else:
+                    penalty += 30.0 # Adjacent role mismatch (e.g., Backend applying for AI)
+                    
+                cand_fam_str = "/".join(cand_families).replace("_", " ").title()
+                warnings.append(f"Job family mismatch: Candidate is {cand_fam_str} while JD requires {jd_family.replace('_', ' ').title()}.")
                 
         # 2. "Tourist" Penalty for Senior Roles
         jd_intro = jd_text[:500].lower()
@@ -82,6 +85,6 @@ class RoleAlignmentLayer:
             tourist_hits = [t for t in self.tourist_terms if t in summary_lower]
             if tourist_hits:
                 penalty += 40.0
-                warnings.append(f"Experience level mismatch: JD requires Senior/Production experience, but candidate profile mentions: '{', '.join(tourist_hits)}'.")
+                warnings.append(f"Experience level mismatch: JD requires Senior/Production experience, but profile mentions: '{', '.join(tourist_hits)}'.")
                 
         return penalty, warnings
