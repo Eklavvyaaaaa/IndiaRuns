@@ -14,6 +14,7 @@ class CandidateScores(BaseModel):
     behavioral_intelligence: float
     career_quality: float
     consistency: float
+    profile_reliability: float
     honeypot_penalty: float
     role_penalty: float
 

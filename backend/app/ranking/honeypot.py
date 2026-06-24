@@ -2,6 +2,8 @@ import json
 import re
 import os
 from collections import Counter
+from src.decay import validate_temporal_claim
+from src.config import REFERENCE_DATE
 
 class HoneypotDetector:
     def __init__(self):
@@ -36,27 +38,63 @@ class HoneypotDetector:
         total_exp_months = sum(c.get("duration_months", 0) for c in career if c.get("duration_months"))
         max_possible_months = total_exp_months + 24 # Buffer for overlaps
         
-        # 2. Skill Support Verification
+        # Check if total experience claimed wildly exceeds the time since they started working
+        import datetime
+        earliest_date = None
+        for c in career:
+            sd = c.get("start_date")
+            if sd:
+                try:
+                    d = datetime.datetime.strptime(sd[:10], "%Y-%m-%d").date()
+                    if not earliest_date or d < earliest_date:
+                        earliest_date = d
+                except ValueError:
+                    pass
+        if earliest_date:
+            true_career_months = max(1, (REFERENCE_DATE.year - earliest_date.year) * 12 + (REFERENCE_DATE.month - earliest_date.month))
+            if total_exp_months > true_career_months * 1.8:
+                penalty += 40.0
+                reliability_deductions += 0.4
+        
+        # 2. Skill Support Verification & Temporal Anomalies
         career_corpus = " ".join([c.get("description", "").lower() for c in career])
         summary_corpus = summary
         
-        unsupported_skills = 0
         extreme_duration_skills = 0
+        expert_zero_duration = 0
+        temporal_flags = 0
+        
         for s in skills:
             s_name = s.get("name", "").lower()
-            if s.get("duration_months", 0) > max_possible_months + 60:
+            dur_months = s.get("duration_months", 0)
+            prof = s.get("proficiency", "").lower()
+            
+            if dur_months > max_possible_months + 60:
                 extreme_duration_skills += 1
-            if s_name and len(s_name) > 3 and s_name not in career_corpus and s_name not in summary_corpus:
-                unsupported_skills += 1
                 
+            # Check for expert skills with zero duration
+            if prof == "expert" and dur_months == 0:
+                expert_zero_duration += 1
+                
+            # Temporal launch-date validation
+            if s_name:
+                validity = validate_temporal_claim(s_name, 0, dur_months)
+                if validity == 0.0:
+                    temporal_flags += 1
+                elif validity == 0.5:
+                    penalty += 10.0
+                    
         if extreme_duration_skills > 5:
             penalty += 20.0
             reliability_deductions += 0.2
             
-        if len(skills) > 5 and (unsupported_skills / len(skills)) > 0.8:
-            # Over 80% of skills are completely unsupported
-            penalty += 10.0
-            reliability_deductions += 0.1
+        if expert_zero_duration >= 2:
+            penalty += 30.0
+            reliability_deductions += 0.3
+            
+        if temporal_flags > 0:
+            penalty += 50.0
+            reliability_deductions += 0.5
             
         # 3. Concurrent Jobs Check
         current_jobs = sum(1 for c in career if c.get("is_current", False))
@@ -96,7 +134,8 @@ class HoneypotDetector:
         if candidate_row.get("candidate_id") == "CAND_0000031":
             print(f"ELA SINGH PENALTY: {penalty}")
             print(f"extreme_durations: {extreme_duration_skills}")
-            print(f"unsupported: {unsupported_skills}/{len(skills)}")
+            print(f"expert_zero_duration: {expert_zero_duration}")
+            print(f"temporal_flags: {temporal_flags}")
             print(f"current_jobs: {current_jobs}")
             print(f"copied_descs: {desc_counts.most_common(1)[0][1] if len(descs) > 1 else 0}")
             

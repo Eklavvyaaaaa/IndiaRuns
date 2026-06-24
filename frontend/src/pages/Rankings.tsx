@@ -61,7 +61,7 @@ export default function Rankings() {
               
               {cand.summary && (
                 <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 text-sm text-slate-300 italic leading-relaxed">
-                  "{cand.summary}"
+                  &ldquo;{cand.summary}&rdquo;
                 </div>
               )}
 
