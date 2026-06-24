@@ -111,7 +111,7 @@ def main():
 
     # 6. Compute Metrics
     print("\n[5/5] Computing Metrics...")
-    ranked_rels = [ground_truth.get(c["candidate_id"], 0) for c in candidates]
+    ranked_rels = [ground_truth.get(str(c["candidate_id"]), 0) for c in candidates]
     
     ndcg_10 = compute_ndcg(ranked_rels, 10)
     ndcg_50 = compute_ndcg(ranked_rels, 50)

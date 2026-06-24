@@ -13,6 +13,8 @@ from src.jd_adaptive import derive_weights
 from src.scoring import compute_final_score
 from src.reasoning import generate_reasoning
 from src.config import SEMANTIC_TOP_K, JD_REQUIRED_SKILLS
+from src.behavioral import compute_behavioral_multiplier
+from src.honeypot import is_likely_honeypot
 
 st.set_page_config(page_title="RedRob Candidate Engine", page_icon="🎯", layout="wide")
 
@@ -82,10 +84,8 @@ def main():
                 features = extract_all_features(candidate)
                 skill_claims = extract_skill_claims(candidate)
                 
-                from src.behavioral import compute_behavioral_multiplier
                 behavioral_mult = compute_behavioral_multiplier(candidate.get("signals", {}))
                 
-                from src.honeypot import is_likely_honeypot
                 if is_likely_honeypot(candidate):
                     continue  # Filter honeypots
                     
@@ -104,7 +104,7 @@ def main():
                 
             scored_candidates.sort(key=lambda x: x[0], reverse=True)
             
-        st.success(f"Scored and ranked {len(embeddings)} candidates in {time.time() - t0:.2f} seconds!")
+        st.success(f"Scored and ranked {len(scored_candidates)} candidates from an initial semantic pool of {k} in {time.time() - t0:.2f} seconds!")
         
         st.subheader("🏆 Top Ranked Candidates")
         for rank, (score, cand, comps) in enumerate(scored_candidates[:top_n], start=1):

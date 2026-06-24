@@ -131,12 +131,4 @@ class HoneypotDetector:
             
         penalty = min(100.0, penalty)
         
-        if candidate_row.get("candidate_id") == "CAND_0000031":
-            print(f"ELA SINGH PENALTY: {penalty}")
-            print(f"extreme_durations: {extreme_duration_skills}")
-            print(f"expert_zero_duration: {expert_zero_duration}")
-            print(f"temporal_flags: {temporal_flags}")
-            print(f"current_jobs: {current_jobs}")
-            print(f"copied_descs: {desc_counts.most_common(1)[0][1] if len(descs) > 1 else 0}")
-            
         return is_quarantined, penalty, profile_reliability

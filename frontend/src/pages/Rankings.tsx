@@ -1,14 +1,48 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+interface CandidateScores {
+  final_score: number;
+  semantic_fit: number;
+  retrieval_intelligence: number;
+  production_readiness: number;
+  skill_trust: number;
+  behavioral_intelligence: number;
+  career_quality: number;
+  consistency: number;
+  role_penalty: number;
+}
+
+interface RankedCandidate {
+  candidate_id: string;
+  anonymized_name: string;
+  title: string;
+  summary: string;
+  scores: CandidateScores;
+  reasoning: string[];
+}
+
+interface RankResponse {
+  status: string;
+  processing_time_ms: number;
+  candidates: RankedCandidate[];
+}
+
 export default function Rankings() {
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<RankResponse | null>(null)
 
   useEffect(() => {
     const data = localStorage.getItem('rankingResults')
     if (data) {
       try {
-        setResults(JSON.parse(data))
+        const parsed = JSON.parse(data)
+        // Runtime shape guard
+        if (parsed && typeof parsed.processing_time_ms === 'number' && Array.isArray(parsed.candidates)) {
+          setResults(parsed as RankResponse)
+        } else {
+          console.error("Invalid ranking results format in local storage")
+          setResults(null)
+        }
       } catch (err) {
         console.error("Failed to parse ranking results:", err)
         setResults(null)
@@ -38,7 +72,7 @@ export default function Rankings() {
       </div>
 
       <div className="space-y-4">
-        {results.candidates.map((cand: any, i: number) => (
+        {results.candidates.map((cand: RankedCandidate, i: number) => (
           <div key={cand.candidate_id} className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-all flex flex-col md:flex-row gap-6">
             <div className="flex-shrink-0 w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-xl font-bold border-2 border-slate-700">
               #{i + 1}

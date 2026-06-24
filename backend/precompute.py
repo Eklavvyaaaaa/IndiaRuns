@@ -119,7 +119,7 @@ def main():
     features_list = []
     for c in candidates_list:
         features_list.append({
-            "candidate_id": c.get("candidate_id"),
+            "candidate_id": str(c.get("candidate_id", "")),
             "anonymized_name": c.get("profile", {}).get("anonymized_name", ""),
             "title": c.get("profile", {}).get("current_title", ""),
             "summary": c.get("profile", {}).get("summary", ""),

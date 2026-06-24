@@ -17,6 +17,8 @@ from src.jd_adaptive import derive_weights
 from src.scoring import compute_final_score
 from src.reasoning import generate_reasoning
 from src.config import SEMANTIC_TOP_K
+from src.behavioral import compute_behavioral_multiplier
+from src.honeypot import is_likely_honeypot
 
 def main():
     parser = argparse.ArgumentParser(description="Rank candidates against a Job Description.")
@@ -63,6 +65,7 @@ def main():
     candidates = load_candidates_batch(args.data)
     if args.limit:
         candidates = candidates[:args.limit]
+        embeddings = embeddings[:args.limit]
     print(f"  Loaded {len(candidates)} records in {time.time() - t0:.2f}s")
     
     if len(candidates) != len(embeddings):
@@ -96,11 +99,9 @@ def main():
         skill_claims = extract_skill_claims(candidate)
         
         # Behavioral penalty/boost
-        from src.behavioral import compute_behavioral_multiplier
         behavioral_mult = compute_behavioral_multiplier(candidate.get("signals", {}))
         
         # Honeypot check
-        from src.honeypot import is_likely_honeypot
         if is_likely_honeypot(candidate):
             continue  # Drop honeypots completely
             

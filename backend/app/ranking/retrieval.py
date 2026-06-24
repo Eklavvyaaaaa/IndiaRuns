@@ -8,6 +8,18 @@ class RetrievalIntelligenceLayer:
             "opensearch", "pinecone", "weaviate", "solr"
         }
 
+    def _safe_parse(self, data) -> list:
+        if not data:
+            return []
+        if isinstance(data, list):
+            return data
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except json.JSONDecodeError:
+                return []
+        return []
+
     def score(self, candidate_row: dict) -> float:
         """
         Calculates Retrieval Intelligence Score out of 100 based on presence of retrieval terms 
@@ -15,8 +27,8 @@ class RetrievalIntelligenceLayer:
         """
         text_corpus = ""
         
-        skills = json.loads(candidate_row.get("skills", "[]"))
-        career = json.loads(candidate_row.get("career_history", "[]"))
+        skills = self._safe_parse(candidate_row.get("skills", "[]"))
+        career = self._safe_parse(candidate_row.get("career_history", "[]"))
         summary = candidate_row.get("summary", "")
         
         for s in skills:

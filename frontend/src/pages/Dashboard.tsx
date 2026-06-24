@@ -10,11 +10,11 @@ export default function Dashboard() {
   const handleRank = async () => {
     setLoading(true)
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/rank'
-      const response = await axios.post(apiUrl, {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+      const response = await axios.post(`${baseUrl}/rank`, {
         job_description: jd,
         top_k: 100
-      })
+      }, { timeout: 30000 })
       // Store results in local storage for now to pass to the rankings page
       localStorage.setItem('rankingResults', JSON.stringify(response.data))
       navigate('/rankings')

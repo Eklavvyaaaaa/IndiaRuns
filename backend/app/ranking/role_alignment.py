@@ -43,7 +43,7 @@ class RoleAlignmentLayer:
         if match:
             target_title = match.group(2)
             for family, terms in self.families.items():
-                if any(t in target_title for t in terms):
+                if any(re.search(rf'\b{re.escape(t)}\b', target_title) for t in terms):
                     return family
                     
         # Fallback: Count occurrences in the first 500 chars and take the max
@@ -63,6 +63,18 @@ class RoleAlignmentLayer:
                 matched.add(family)
         return matched
 
+    def _safe_parse(self, data) -> list:
+        if not data:
+            return []
+        if isinstance(data, list):
+            return data
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except json.JSONDecodeError:
+                return []
+        return []
+
     def penalize(self, jd_text: str, row: dict, pr_score: float) -> Tuple[float, List[str]]:
         """
         Returns a penalty score and a list of warning reasons.
@@ -75,8 +87,8 @@ class RoleAlignmentLayer:
         candidate_summary = row.get("summary", "")
         title_lower = candidate_title.lower()
         summary_lower = candidate_summary.lower()
-        career = json.loads(row.get("career_history", "[]"))
-        skills = json.loads(row.get("skills", "[]"))
+        career = self._safe_parse(row.get("career_history", "[]"))
+        skills = self._safe_parse(row.get("skills", "[]"))
         
         warnings = []
         penalty = 0.0

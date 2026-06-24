@@ -21,7 +21,8 @@ class SemanticSearchLayer:
         if self.index is None:
             return []
             
-        emb = self.model.encode([jd_text], normalize_embeddings=True)
+        query_text = f"Represent this sentence for searching relevant passages: {jd_text}"
+        emb = self.model.encode([query_text], normalize_embeddings=True)
         emb = np.array(emb).astype("float32")
         
         # Search FAISS. index.search returns (distances/scores, indices)
