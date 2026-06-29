@@ -1,0 +1,71 @@
+{
+    "families": {
+        "ai_ml": {
+            "synonyms": ["ai engineer", "machine learning", "ml engineer", "applied scientist", "researcher", "data scientist", "deep learning", "nlp", "computer vision"],
+            "core_tech_words": ["machine learning", "neural network", "deep learning", "pytorch", "tensorflow", "llm", "faiss", "vector database"]
+        },
+        "backend": {
+            "synonyms": ["backend", "software engineer", "sde", "swe", "developer", "programmer", "platform engineer", "systems engineer"],
+            "core_tech_words": ["java", "python", "go", "c++", "rust", "microservices", "api", "distributed systems"]
+        },
+        "data_engineering": {
+            "synonyms": ["data engineer", "big data", "etl", "data architect"],
+            "core_tech_words": ["spark", "hadoop", "kafka", "airflow", "dbt", "snowflake", "bigquery"]
+        },
+        "mlops": {
+            "synonyms": ["mlops", "devops for ml", "machine learning operations"],
+            "core_tech_words": ["kubeflow", "mlflow", "sagemaker", "kubernetes", "docker", "ci/cd"]
+        },
+        "devops": {
+            "synonyms": ["devops", "sre", "site reliability", "cloud engineer", "infrastructure"],
+            "core_tech_words": ["aws", "gcp", "azure", "terraform", "kubernetes", "docker", "ansible"]
+        },
+        "hardware": {
+            "synonyms": ["mechanical engineer", "civil engineer", "electrical engineer", "hardware engineer", "aerospace"],
+            "core_tech_words": ["autocad", "solidworks", "matlab", "manufacturing"]
+        },
+        "design": {
+            "synonyms": ["graphic designer", "ui/ux", "product designer", "visual designer", "animator", "illustrator", "content creator"],
+            "core_tech_words": ["figma", "adobe", "photoshop", "illustrator", "sketch"]
+        },
+        "marketing": {
+            "synonyms": ["marketing manager", "seo", "growth", "content writer", "copywriter", "social media", "brand manager"],
+            "core_tech_words": ["hubspot", "seo", "sem", "google analytics", "campaign"]
+        },
+        "operations": {
+            "synonyms": ["operations manager", "supply chain", "logistics", "business operations"],
+            "core_tech_words": ["erp", "logistics", "supply chain"]
+        },
+        "finance": {
+            "synonyms": ["accountant", "financial analyst", "cfo", "auditor"],
+            "core_tech_words": ["excel", "accounting", "financial modeling", "audit"]
+        },
+        "hr": {
+            "synonyms": ["hr manager", "human resources", "recruiter", "talent acquisition", "sourcer", "people ops"],
+            "core_tech_words": ["ats", "recruiting", "sourcing", "workday"]
+        },
+        "sales": {
+            "synonyms": ["sales executive", "account executive", "business development", "bd", "account manager"],
+            "core_tech_words": ["salesforce", "crm", "b2b", "lead generation"]
+        },
+        "product": {
+            "synonyms": ["product manager", "project manager", "program manager", "scrum master", "agile coach", "product owner", "business analyst"],
+            "core_tech_words": ["jira", "agile", "scrum", "roadmap", "prds"]
+        },
+        "support": {
+            "synonyms": ["customer support", "technical support", "helpdesk", "customer success"],
+            "core_tech_words": ["zendesk", "intercom", "ticketing", "troubleshooting"]
+        }
+    },
+    "technical_families": [
+        "ai_ml", "backend", "data_engineering", "mlops", "devops"
+    ],
+    "non_technical_families": [
+        "design", "marketing", "operations", "finance", "hr", "sales", "support", "product", "hardware"
+    ],
+    "tourist_terms": [
+        "side project", "side-project", "playing with", "experimenting with", 
+        "taking online courses", "self-learner", "bootcamp", "just learning", 
+        "exploring", "tinkering", "hobby"
+    ]
+}
