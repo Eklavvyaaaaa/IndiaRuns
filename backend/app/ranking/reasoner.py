@@ -39,7 +39,7 @@ def _extract_experience_range(jd_text: str) -> tuple[float, float]:
 
 
 class ReasoningEngine:
-    def generate(self, candidate_row: dict, scores: dict, jd_text: str = "") -> list[str]:
+    def generate(self, candidate_row: dict, scores: dict, jd_text: str = "", blindspot: dict = None) -> list[str]:
         """
         Generates evidence-based, organic reasoning bullets grounded
         entirely in the candidate's actual data. Never hallucinate.
@@ -134,20 +134,26 @@ class ReasoningEngine:
 
         # ── 3. Scoring highlights ─────────────────────────────────────
         sem = scores.get("semantic_fit", 0)
+        jrf = scores.get("jd_requirement_fit", 0)
         ri = scores.get("retrieval_intelligence", 0)
         pr = scores.get("production_readiness", 0)
         st = scores.get("skill_trust", 0)
         bi = scores.get("behavioral_intelligence", 0)
         cq = scores.get("career_quality", 0)
+        cs = scores.get("consistency", 0)
+        edu = scores.get("education", 0)
 
         # Find the strongest and weakest dimensions
         dims = {
             "Semantic fit": sem,
+            "JD requirement coverage": jrf,
             "Retrieval intelligence": ri,
             "Production readiness": pr,
             "Skill trust": st,
             "Behavioral signals": bi,
             "Career quality": cq,
+            "Consistency": cs,
+            "Education": edu,
         }
         strongest = max(dims, key=dims.get)
         weakest = min(dims, key=dims.get)
@@ -229,4 +235,11 @@ class ReasoningEngine:
             parts = [f"{name}: {score}/100" for name, score in top_assessed]
             reasons.append(f"Platform assessments: {', '.join(parts)}.")
 
+        # ── 8. Predictive Technical Assessment Copilot (USP) ──────────
+        if blindspot and "blindspots" in blindspot:
+            missing = blindspot["blindspots"]
+            if missing and blindspot.get("is_hidden_gem"):
+                reasons.append(f"Technical Copilot: Strong candidate but missing {', '.join(missing[:2])}. Ask: 'Can you describe how your existing skills map to {missing[0]}?'")
+            elif missing:
+                reasons.append(f"Technical Copilot: Gap identified in {', '.join(missing[:2])}. Ask: 'Have you had exposure to {missing[0]} in your past roles?'")
         return reasons

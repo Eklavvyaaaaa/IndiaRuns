@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -13,7 +13,9 @@ export default function Dashboard() {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
       const response = await axios.post(`${baseUrl}/rank`, {
         job_description: jd,
-        top_k: 100
+        top_k: 100,
+        use_adaptive: false,
+        priority_overrides: {}
       }, { timeout: 30000 })
       // Store results in local storage for now to pass to the rankings page
       localStorage.setItem('rankingResults', JSON.stringify(response.data))
@@ -30,10 +32,10 @@ export default function Dashboard() {
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-4 text-center">
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-          Discover the <span className="text-blue-500">Hidden Gems</span>
+          Run the <span className="text-blue-500">Normal Ranking Engine</span>
         </h1>
         <p className="text-lg text-slate-400">
-          Paste your job description below. Our Intelligence Engine will bypass keyword stuffing and rank the top 100 candidates based on true semantic capability, skill trust, and production readiness.
+          Paste your job description below. This mode uses the standard ranking mix across semantic fit, skills, production readiness, career quality, behavior, consistency, and education.
         </p>
       </div>
 
@@ -52,14 +54,14 @@ export default function Dashboard() {
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              🚀 Rank Candidates
+              Rank Candidates
             </button>
           </div>
           
           {loading && (
             <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10 animate-in fade-in duration-300">
               <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-              <h3 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent animate-pulse">Running Intelligence Engine...</h3>
+              <h3 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent animate-pulse">Running Normal Engine...</h3>
               <p className="text-slate-400 font-mono text-sm max-w-sm text-center">
                 Computing 384-dimensional dense vectors, searching FAISS index, evaluating production readiness, and checking honeypot logic.
               </p>

@@ -6,7 +6,10 @@ from app.api import endpoints
 app = FastAPI(title="Candidate Intelligence Engine API", version="1.0")
 
 # Load allowed origins from environment variable or use a safe default
-allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+allowed_origins_str = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+)
 origins = [origin.strip() for origin in allowed_origins_str.split(",")]
 
 app.add_middleware(

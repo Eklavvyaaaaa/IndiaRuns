@@ -1,0 +1,271 @@
+{
+  "base_weights": {
+    "semantic": 0.24,
+    "jrf": 0.16,
+    "ri": 0.15,
+    "pr": 0.12,
+    "st": 0.09,
+    "bi": 0.08,
+    "cq": 0.08,
+    "cs": 0.04,
+    "edu": 0.04
+  },
+  "weight_floor": 0.03,
+  "weight_cap": 0.36,
+  "negation_terms": [
+    "no",
+    "not",
+    "without",
+    "not required",
+    "not mandatory",
+    "optional",
+    "nice to have only"
+  ],
+  "signals": [
+    {
+      "name": "elite_education",
+      "label": "Elite education requirement",
+      "cues": [
+        "tier 1 college",
+        "tier-1 college",
+        "tier one college",
+        "top college",
+        "top university",
+        "premier institute",
+        "elite institute",
+        "iit",
+        "iisc",
+        "iim",
+        "bits pilani",
+        "ivy league"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "edu": 0.16,
+        "jrf": 0.03,
+        "semantic": -0.04,
+        "bi": -0.03,
+        "cs": -0.02
+      }
+    },
+    {
+      "name": "advanced_degree",
+      "label": "Advanced degree preference",
+      "cues": [
+        "phd",
+        "doctorate",
+        "masters",
+        "master's",
+        "ms degree",
+        "mtech",
+        "m.tech"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "edu": 0.08,
+        "jrf": 0.03,
+        "semantic": 0.03,
+        "pr": -0.02
+      }
+    },
+    {
+      "name": "production_readiness",
+      "label": "Production readiness",
+      "cues": [
+        "production",
+        "deploy",
+        "deployment",
+        "monitoring",
+        "latency",
+        "reliability",
+        "scale",
+        "ci/cd",
+        "high availability"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "pr": 0.10,
+        "jrf": 0.04,
+        "st": 0.04,
+        "semantic": -0.03
+      }
+    },
+    {
+      "name": "retrieval_search",
+      "label": "Retrieval and search depth",
+      "cues": [
+        "retrieval",
+        "search",
+        "ranking",
+        "recommendation",
+        "vector database",
+        "rag",
+        "embeddings",
+        "faiss",
+        "qdrant",
+        "pinecone"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "ri": 0.11,
+        "jrf": 0.05,
+        "semantic": 0.04,
+        "pr": 0.02
+      }
+    },
+    {
+      "name": "research_orientation",
+      "label": "Research orientation",
+      "cues": [
+        "research",
+        "publication",
+        "state of the art",
+        "novel model",
+        "experimentation",
+        "first principles",
+        "papers"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "semantic": 0.08,
+        "jrf": 0.04,
+        "edu": 0.05,
+        "pr": -0.03
+      }
+    },
+    {
+      "name": "leadership",
+      "label": "Leadership expectation",
+      "cues": [
+        "lead team",
+        "mentor",
+        "technical leadership",
+        "own roadmap",
+        "staff engineer",
+        "principal engineer"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "cq": 0.06,
+        "jrf": 0.03,
+        "bi": 0.04,
+        "cs": 0.02
+      }
+    },
+    {
+      "name": "startup_mindset",
+      "label": "Startup mindset",
+      "cues": [
+        "startup",
+        "early stage",
+        "founding",
+        "zero to one",
+        "0 to 1",
+        "wear many hats",
+        "scrappy"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "cq": 0.05,
+        "jrf": 0.03,
+        "pr": 0.03,
+        "semantic": -0.03
+      }
+    },
+    {
+      "name": "customer_facing",
+      "label": "Customer-facing communication",
+      "cues": [
+        "customer facing",
+        "client facing",
+        "stakeholder",
+        "communicate",
+        "presentation",
+        "cross-functional"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "bi": 0.06,
+        "jrf": 0.03,
+        "cs": 0.03
+      }
+    },
+    {
+      "name": "location_strict",
+      "label": "Strict location requirement",
+      "cues": [
+        "onsite",
+        "on-site",
+        "hybrid",
+        "must be in",
+        "work from office",
+        "no remote"
+      ],
+      "positive_negation_exceptions": [
+        "no remote"
+      ],
+      "weight_deltas": {
+        "semantic": -0.02,
+        "jrf": 0.02,
+        "bi": 0.02,
+        "cs": 0.02
+      }
+    },
+    {
+      "name": "enterprise_experience",
+      "label": "Enterprise or Fortune 500 experience",
+      "cues": [
+        "enterprise",
+        "fortune 500",
+        "large enterprise",
+        "global enterprise",
+        "regulated enterprise"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "cq": 0.05,
+        "jrf": 0.04,
+        "cs": 0.03,
+        "pr": 0.02,
+        "semantic": -0.02
+      }
+    },
+    {
+      "name": "healthcare_domain",
+      "label": "Healthcare domain expertise",
+      "cues": [
+        "healthcare",
+        "health tech",
+        "hospital",
+        "clinical",
+        "medical",
+        "hipaa"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "semantic": 0.05,
+        "jrf": 0.05,
+        "cs": 0.03,
+        "st": 0.02
+      }
+    },
+    {
+      "name": "aws_certification",
+      "label": "AWS certification requirement",
+      "cues": [
+        "aws certification",
+        "aws certified",
+        "solutions architect certification",
+        "aws solutions architect",
+        "cloud practitioner"
+      ],
+      "positive_negation_exceptions": [],
+      "weight_deltas": {
+        "st": 0.05,
+        "jrf": 0.04,
+        "pr": 0.03,
+        "semantic": -0.02
+      }
+    }
+  ]
+}

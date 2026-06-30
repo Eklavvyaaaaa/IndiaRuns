@@ -1,10 +1,16 @@
-import React from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { CometChatService } from './lib/CometChatService'
 import Dashboard from './pages/Dashboard'
 import Rankings from './pages/Rankings'
+import AdaptiveJD from './pages/AdaptiveJD'
 import './index.css'
 
 function App() {
+  useEffect(() => {
+    CometChatService.init();
+  }, []);
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-950 text-slate-50 font-sans">
@@ -15,7 +21,8 @@ function App() {
                 Candidate Intelligence
               </Link>
               <div className="flex gap-4 text-sm font-medium text-slate-300">
-                <Link to="/" className="hover:text-white transition-colors">Dashboard</Link>
+                <Link to="/" className="hover:text-white transition-colors">Normal Engine</Link>
+                <Link to="/adaptive-jd" className="hover:text-white transition-colors">Adaptive JD</Link>
                 <Link to="/rankings" className="hover:text-white transition-colors">Rankings</Link>
               </div>
             </div>
@@ -25,6 +32,7 @@ function App() {
         <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/adaptive-jd" element={<AdaptiveJD />} />
             <Route path="/rankings" element={<Rankings />} />
           </Routes>
         </main>

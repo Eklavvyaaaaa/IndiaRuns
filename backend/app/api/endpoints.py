@@ -38,13 +38,24 @@ def get_engine():
 @router.post("/rank", response_model=RankResponse)
 def rank_candidates(request: RankRequest, engine: RankingEngine = Depends(get_engine)):
     start_time = time.time()
-    
-    candidates = engine.rank(request.job_description, top_k=request.top_k)
+    jd_analysis = engine.build_jd_analysis(
+        request.job_description,
+        use_adaptive=request.use_adaptive,
+        priority_overrides=request.priority_overrides,
+    )
+    candidates = engine.rank(
+        request.job_description,
+        top_k=request.top_k,
+        use_adaptive=request.use_adaptive,
+        priority_overrides=request.priority_overrides,
+        jd_analysis=jd_analysis,
+    )
     
     processing_time = (time.time() - start_time) * 1000.0
     
     return RankResponse(
         status="success",
         processing_time_ms=round(processing_time, 2),
+        jd_analysis=jd_analysis,
         candidates=candidates
     )
