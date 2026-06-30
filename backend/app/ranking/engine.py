@@ -11,6 +11,9 @@ from app.ranking.role_alignment import RoleAlignmentLayer
 from app.ranking.honeypot import HoneypotDetector
 from app.ranking.blindspot import BlindSpotEngine
 from app.ranking.reasoner import ReasoningEngine
+from app.ranking.education import EducationLayer
+from app.ranking.jd_adaptive import JDAdaptiveWeightEngine
+from app.ranking.jd_requirement_fit import JDRequirementFitLayer
 
 class RankingEngine:
     def __init__(self, artifacts_dir: str = "backend/artifacts"):
@@ -21,10 +24,14 @@ class RankingEngine:
         self.behavioral = BehavioralIntelligenceLayer()
         self.career_quality = CareerQualityLayer()
         self.consistency = ConsistencyLayer()
+        self.education = EducationLayer()
+        self.jd_adaptive = JDAdaptiveWeightEngine()
+        self.jd_requirement_fit = JDRequirementFitLayer(self.semantic.model)
         self.role_alignment = RoleAlignmentLayer()
         self.honeypot = HoneypotDetector()
         self.blindspot = BlindSpotEngine()
         self.reasoner = ReasoningEngine()
+        self.last_jd_analysis = None
         
         # Load candidate features
         import os
@@ -44,42 +51,32 @@ class RankingEngine:
         else:
             self.df = None
 
-    def rank(self, jd_text: str, top_k: int = 100) -> list[dict]:
+    def build_jd_analysis(
+        self,
+        jd_text: str,
+        use_adaptive: bool = False,
+        priority_overrides: dict[str, float] | None = None,
+    ) -> dict:
+        if use_adaptive:
+            jd_analysis = self.jd_adaptive.analyze(jd_text)
+            return self.jd_adaptive.apply_priority_overrides(jd_analysis, priority_overrides)
+        return self.jd_adaptive.base_analysis()
+
+    def rank(
+        self,
+        jd_text: str,
+        top_k: int = 100,
+        use_adaptive: bool = False,
+        priority_overrides: dict[str, float] | None = None,
+        jd_analysis: dict | None = None,
+    ) -> list[dict]:
         if self.df is None:
             return []
 
-        # JD-Adaptive Weight Engine
-        from src.config import SIGNAL_MAP, SIGNAL_DELTAS, WEIGHT_FLOOR
-        weights = {
-            "semantic": 0.30,
-            "ri": 0.20,
-            "pr": 0.15,
-            "st": 0.10,
-            "bi": 0.10,
-            "cq": 0.10,
-            "cs": 0.05
-        }
-        jd_lower = jd_text.lower()
-        signals_found = set()
-        for sig_name, keywords in SIGNAL_MAP.items():
-            if any(k in jd_lower for k in keywords):
-                signals_found.add(sig_name)
-                
-        for sig in signals_found:
-            deltas = SIGNAL_DELTAS.get(sig, {})
-            if "semantic_fit" in deltas:
-                weights["semantic"] += deltas["semantic_fit"]
-            if "career_fit" in deltas:
-                weights["ri"] += deltas["career_fit"]
-            if "skill_trust" in deltas:
-                weights["st"] += deltas["skill_trust"]
-            if "career_velocity" in deltas:
-                weights["cq"] += deltas["career_velocity"]
-                
-        # Normalize weights
-        total_w = sum(max(WEIGHT_FLOOR, w) for w in weights.values())
-        for k in weights:
-            weights[k] = max(WEIGHT_FLOOR, weights[k]) / total_w
+        if jd_analysis is None:
+            jd_analysis = self.build_jd_analysis(jd_text, use_adaptive, priority_overrides)
+        self.last_jd_analysis = jd_analysis
+        weights = jd_analysis["adaptive_weights"]
 
         # 1. Semantic Search (Fetch a deep pool to ensure the engine has enough to re-rank)
         pool_size = max(1000, top_k * 5)
@@ -108,16 +105,20 @@ class RankingEngine:
             bi_score = self.behavioral.score(row)
             cq_score = self.career_quality.score(row)
             cs_score = self.consistency.score(row)
+            edu_score = self.education.score(row, jd_analysis)
+            jrf_score = self.jd_requirement_fit.score(jd_text, row)
             
             # Calculate weighted final score
             final_score = (
                 (semantic_fit * weights["semantic"]) +
+                (jrf_score * weights["jrf"]) +
                 (ri_score * weights["ri"]) +
                 (pr_score * weights["pr"]) +
                 (st_score * weights["st"]) +
                 (bi_score * weights["bi"]) +
                 (cq_score * weights["cq"]) +
-                (cs_score * weights["cs"])
+                (cs_score * weights["cs"]) +
+                (edu_score * weights["edu"])
             ) - hp_penalty - role_penalty
             
             if is_quarantined:
@@ -128,12 +129,14 @@ class RankingEngine:
             scores = {
                 "final_score": round(final_score, 1),
                 "semantic_fit": round(semantic_fit, 1),
+                "jd_requirement_fit": round(jrf_score, 1),
                 "retrieval_intelligence": round(ri_score, 1),
                 "production_readiness": round(pr_score, 1),
                 "skill_trust": round(st_score, 1),
                 "behavioral_intelligence": round(bi_score, 1),
                 "career_quality": round(cq_score, 1),
                 "consistency": round(cs_score, 1),
+                "education": round(edu_score, 1),
                 "profile_reliability": round(profile_reliability * 100.0, 1),
                 "honeypot_penalty": round(hp_penalty, 1),
                 "role_penalty": round(role_penalty, 1)
@@ -143,11 +146,27 @@ class RankingEngine:
             bs = self.blindspot.compute(jd_text, row, final_score)
             
             # 5. Reasoning
-            reasons = self.reasoner.generate(row, scores, jd_text)
+            reasons = self.reasoner.generate(row, scores, jd_text, bs)
             
             if role_warnings:
                 for w in role_warnings:
                     reasons.append(f"WARNING: {w}")
+
+            active_signals = [
+                s["label"] for s in jd_analysis.get("signals", [])
+                if s.get("polarity") == "positive"
+            ]
+            if use_adaptive and active_signals:
+                reasons.append(
+                    "JD-adaptive weighting active: "
+                    + ", ".join(active_signals[:4])
+                    + f". Education weight={weights['edu']:.2f}."
+                )
+            if use_adaptive and jd_analysis.get("manual_priorities"):
+                reasons.append(
+                    "Manual adaptive priorities active. "
+                    + f"Education weight={weights['edu']:.2f}, career weight={weights['cq']:.2f}."
+                )
             
             results.append({
                 "candidate_id": row["candidate_id"],

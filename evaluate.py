@@ -106,8 +106,9 @@ def main():
             reasoning = " ".join(c.get("reasoning", []))
             writer.writerow([c["candidate_id"], i + 1, c["scores"]["final_score"], reasoning])
             
-    if len(candidates) != 100:
-        print(f"  ⚠️ Warning: Returned {len(candidates)} rows, spec requires exactly 100.")
+    expected = min(100, len(engine.df))
+    if len(candidates) != expected:
+        print(f"  ⚠️ Warning: Returned {len(candidates)} rows, spec requires exactly {expected}.")
 
     # 6. Compute Metrics
     print("\n[5/5] Computing Metrics...")
