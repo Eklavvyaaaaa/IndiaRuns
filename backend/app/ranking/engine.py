@@ -163,9 +163,9 @@ class RankingEngine:
                     + f". Education weight={weights['edu']:.2f}."
                 )
             if use_adaptive and jd_analysis.get("manual_priorities"):
+                priority_text = ", ".join(f"{k} weight={weights.get(k, 0):.2f}" for k in jd_analysis["manual_priorities"])
                 reasons.append(
-                    "Manual adaptive priorities active. "
-                    + f"Education weight={weights['edu']:.2f}, career weight={weights['cq']:.2f}."
+                    f"Manual adaptive priorities active. {priority_text}."
                 )
             
             results.append({

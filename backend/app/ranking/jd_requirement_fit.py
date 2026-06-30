@@ -46,6 +46,7 @@ class JDRequirementFitLayer:
 
     def __init__(self, model=None):
         self.model = model
+        self.jd_emb_cache = {}
 
     def score(self, jd_text: str, candidate_row: dict) -> float:
         jd_terms_dict = self._extract_jd_terms(jd_text)
@@ -64,8 +65,10 @@ class JDRequirementFitLayer:
         if self.model and jd_terms:
             try:
                 import numpy as np
-                # Embed JD terms and candidate skills
-                jd_embs = self.model.encode(jd_terms, normalize_embeddings=True)
+                jd_terms_tuple = tuple(jd_terms)
+                if jd_terms_tuple not in self.jd_emb_cache:
+                    self.jd_emb_cache[jd_terms_tuple] = self.model.encode(jd_terms, normalize_embeddings=True)
+                jd_embs = self.jd_emb_cache[jd_terms_tuple]
                 
                 # We can embed the candidate skills as a list
                 cand_skill_list = list(candidate_skills)

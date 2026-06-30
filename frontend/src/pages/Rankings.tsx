@@ -255,10 +255,10 @@ export default function Rankings() {
   )
 }
 
-function Metric({ label, value }: { label: string, value: number }) {
+function Metric({ label, value = 0 }: { label: string, value?: number }) {
   return (
     <div>
-      <div className="text-lg font-semibold text-slate-200">{value.toFixed(1)}</div>
+      <div className="text-lg font-semibold text-slate-200">{(value || 0).toFixed(1)}</div>
       <div className="text-xs text-slate-500">{label}</div>
     </div>
   )

@@ -114,8 +114,8 @@ class JDAdaptiveWeightEngine:
 
         for sentence in sentences:
             lower = sentence.lower()
-            if any(cue in lower for cue in signal.cues):
-                if any(exception in lower for exception in signal.positive_negation_exceptions):
+            if any(re.search(r'\b' + re.escape(cue) + r'\b', lower) for cue in signal.cues):
+                if any(re.search(r'\b' + re.escape(exc) + r'\b', lower) for exc in signal.positive_negation_exceptions):
                     evidence.append(sentence)
                 elif self.negation_re.search(sentence):
                     negated_evidence.append(sentence)
@@ -193,10 +193,10 @@ class JDAdaptiveWeightEngine:
         return f"The JD emphasizes {label.lower()} through: {' '.join(evidence)}"
 
     def _sentences(self, text: str) -> list[str]:
-        compact = re.sub(r"\s+", " ", text or "").strip()
-        if not compact:
+        if not text:
             return []
-        return [s.strip() for s in re.split(r"(?<=[.!?])\s+|[\n\r]+", compact) if s.strip()]
+        parts = re.split(r"(?<=[.!?])\s+|[\n\r]+", text)
+        return [re.sub(r"\s+", " ", s).strip() for s in parts if s.strip()]
 
     def _load_config(self, config_path: str) -> dict[str, Any]:
         with open(config_path, "r", encoding="utf-8") as f:

@@ -142,8 +142,9 @@ export default function AdaptiveJD() {
       <div className="grid lg:grid-cols-[1fr_420px] gap-6">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
           <div>
-            <label className="text-sm font-semibold text-slate-300">Job Description</label>
+            <label htmlFor="jd-input" className="text-sm font-semibold text-slate-300">Job Description</label>
             <textarea
+              id="jd-input"
               value={jd}
               onChange={(e) => setJd(e.target.value)}
               className="mt-2 w-full h-[420px] bg-slate-950 border border-slate-800 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
@@ -184,6 +185,7 @@ export default function AdaptiveJD() {
                   </div>
                   <input
                     type="range"
+                    aria-label={`${priority.label} priority`}
                     min="0"
                     max="5"
                     step="1"

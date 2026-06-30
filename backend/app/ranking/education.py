@@ -23,7 +23,8 @@ class EducationLayer:
         self.signal_blends = self.config.get("signal_blends", {})
 
     def score(self, candidate_row: dict, jd_analysis: dict[str, Any] | None = None) -> float:
-        education = self._safe_parse(candidate_row.get("education", "[]"))
+        parsed_edu = self._safe_parse(candidate_row.get("education", "[]"))
+        education = [item for item in parsed_edu if isinstance(item, dict)]
         if not education:
             return float(self.config.get("default_missing_score", 35.0))
 
@@ -57,7 +58,7 @@ class EducationLayer:
         degree = str(education_item.get("degree", "") or "").lower()
 
         for rule in self.degree_rules:
-            if any(term in degree for term in rule.get("terms", [])):
+            if any(re.search(r'\b' + re.escape(term) + r'\b', degree) for term in rule.get("terms", [])):
                 return float(rule["score"])
 
         if degree:
