@@ -63,14 +63,14 @@ interface RankResponse {
 
 export default function Rankings() {
   const [results, setResults] = useState<RankResponse | null>(null)
-  const [activeChat, setActiveChat] = useState<{uid: string, name: string} | null>(null)
+  const [activeChat, setActiveChat] = useState<{guid: string, candidate: RankedCandidate} | null>(null)
   const [isCreatingUser, setIsCreatingUser] = useState(false)
 
   const handleDiscussionClick = async (cand: RankedCandidate) => {
     setIsCreatingUser(true)
     const guid = await CometChatService.joinOrCreateDiscussionRoom(cand.candidate_id, cand.anonymized_name)
     if (guid) {
-      setActiveChat({ uid: guid, name: cand.anonymized_name })
+      setActiveChat({ guid, candidate: cand })
     }
     setIsCreatingUser(false)
   }
@@ -246,8 +246,8 @@ export default function Rankings() {
 
       {activeChat && (
         <DiscussionRoomWidget 
-          guid={activeChat.uid} 
-          candidateName={activeChat.name} 
+          guid={activeChat.guid} 
+          candidate={activeChat.candidate} 
           onClose={() => setActiveChat(null)} 
         />
       )}
