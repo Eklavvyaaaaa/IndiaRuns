@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cometchat/chat-sdk-javascript": "^4.1.11",
     "axios": "^1.18.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.21.0",

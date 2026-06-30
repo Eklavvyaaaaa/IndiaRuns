@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { MessageSquare, Users } from 'lucide-react'
+import DiscussionRoomWidget from '../lib/DiscussionRoomWidget'
+import { CometChatService } from '../lib/CometChatService'
 
 interface CandidateScores {
   final_score: number;
@@ -60,6 +63,17 @@ interface RankResponse {
 
 export default function Rankings() {
   const [results, setResults] = useState<RankResponse | null>(null)
+  const [activeChat, setActiveChat] = useState<{uid: string, name: string} | null>(null)
+  const [isCreatingUser, setIsCreatingUser] = useState(false)
+
+  const handleDiscussionClick = async (cand: RankedCandidate) => {
+    setIsCreatingUser(true)
+    const guid = await CometChatService.joinOrCreateDiscussionRoom(cand.candidate_id, cand.anonymized_name)
+    if (guid) {
+      setActiveChat({ uid: guid, name: cand.anonymized_name })
+    }
+    setIsCreatingUser(false)
+  }
 
   useEffect(() => {
     const data = localStorage.getItem('rankingResults')
@@ -161,11 +175,19 @@ export default function Rankings() {
                   <h3 className="text-md text-blue-400 font-medium mt-1">{cand.title}</h3>
                   <p className="text-sm text-slate-400 font-mono mt-0.5">{cand.candidate_id}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-2">
                   <div className="text-3xl font-black bg-gradient-to-br from-green-400 to-emerald-600 bg-clip-text text-transparent">
                     {cand.scores.final_score.toFixed(1)}
                   </div>
                   <div className="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">Final Score</div>
+                  <button 
+                    onClick={() => handleDiscussionClick(cand)}
+                    disabled={isCreatingUser}
+                    className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-600/30 rounded-md text-sm font-medium transition-colors"
+                  >
+                    <Users size={14} />
+                    {isCreatingUser ? 'Opening...' : 'Discuss'}
+                  </button>
                 </div>
               </div>
               
@@ -221,6 +243,14 @@ export default function Rankings() {
           </div>
         ))}
       </div>
+
+      {activeChat && (
+        <DiscussionRoomWidget 
+          guid={activeChat.uid} 
+          candidateName={activeChat.name} 
+          onClose={() => setActiveChat(null)} 
+        />
+      )}
     </div>
   )
 }

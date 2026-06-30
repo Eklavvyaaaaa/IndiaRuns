@@ -1,10 +1,16 @@
-i waimport { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { CometChatService } from './lib/CometChatService'
 import Dashboard from './pages/Dashboard'
 import Rankings from './pages/Rankings'
 import AdaptiveJD from './pages/AdaptiveJD'
 import './index.css'
 
 function App() {
+  useEffect(() => {
+    CometChatService.init();
+  }, []);
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-950 text-slate-50 font-sans">
