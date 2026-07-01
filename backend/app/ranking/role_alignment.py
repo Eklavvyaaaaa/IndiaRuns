@@ -97,6 +97,27 @@ class RoleAlignmentLayer:
         jd_family = self._extract_jd_primary_family(jd_text)
         cand_families = self._get_candidate_families(title_lower)
         
+        # 0. Experience Band Disqualifier
+        import re
+        jd_lower_text = jd_text.lower()
+        exp_min = 0.0
+        range_match = re.search(r'(\d+)\s*[-–to]+\s*(\d+)\s*(?:\+?\s*)?years?', jd_lower_text)
+        if range_match:
+            exp_min = float(range_match.group(1))
+        else:
+            plus_match = re.search(r'(?:minimum|at least|min)?\s*(\d+)\s*\+?\s*years?', jd_lower_text)
+            if plus_match:
+                exp_min = float(plus_match.group(1))
+
+        if exp_min > 0:
+            total_exp_months = sum(c.get("duration_months", 0) for c in career if c.get("duration_months"))
+            total_exp_years = total_exp_months / 12.0
+            
+            if total_exp_years < exp_min - 0.5:
+                shortfall = exp_min - total_exp_years
+                penalty += min(60.0, 15.0 * shortfall)
+                warnings.append(f"Experience Disqualifier: JD requires {exp_min}+ years, but candidate only has {total_exp_years:.1f} years.")
+
         # 1. Job Family Mismatch Penalty (SOFTENED)
         # Only apply strong penalties for clearly non-technical candidates
         # applying to technical roles. Adjacent tech roles get a gentle nudge.

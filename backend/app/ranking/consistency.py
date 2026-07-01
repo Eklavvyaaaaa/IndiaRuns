@@ -8,8 +8,16 @@ class ConsistencyLayer:
         """
         title = candidate_row.get("title", "").lower()
         summary = candidate_row.get("summary", "").lower()
-        skills = json.loads(candidate_row.get("skills", "[]"))
-        career = json.loads(candidate_row.get("career_history", "[]"))
+        
+        try:
+            skills = json.loads(candidate_row.get("skills", "[]"))
+        except Exception:
+            skills = []
+            
+        try:
+            career = json.loads(candidate_row.get("career_history", "[]"))
+        except Exception:
+            career = []
         
         score = 100.0
         

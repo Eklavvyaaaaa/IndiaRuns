@@ -197,9 +197,7 @@ export default function Rankings() {
                 </div>
               )}
 
-              <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3 pt-4 border-t border-slate-800">
-                <Metric label="Semantic" value={cand.scores.semantic_fit} />
-                <Metric label="JD Coverage" value={cand.scores.jd_requirement_fit} />
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 pt-4 border-t border-slate-800">
                 <Metric label="Retrieval" value={cand.scores.retrieval_intelligence} />
                 <Metric label="Prod Ready" value={cand.scores.production_readiness} />
                 <Metric label="Skill Trust" value={cand.scores.skill_trust} />
