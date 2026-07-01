@@ -74,7 +74,13 @@ test_cases = [
 print("Running ConsistencyLayer tests...\n")
 for i, test in enumerate(test_cases):
     score = layer.score(test["candidate"])
-    print(f"Test {i+1}: {test['name']}")
-    print(f"  Score    : {score}")
-    print(f"  Expected : {test['expect']}")
-    print()
+    print(f"Test {i+1}: {test['name']} - Score: {score}")
+    
+    if "clean" in test["expect"]:
+        assert score >= 70.0, f"Expected high score for clean test, got {score}"
+    elif "major_mismatch" in test["expect"]:
+        assert score <= 50.0, f"Expected low score for major_mismatch, got {score}"
+    elif "low confidence" in test["expect"]:
+        assert score == 70.0, f"Expected 70.0 for low confidence, got {score}"
+        
+print("All consistency tests passed!")

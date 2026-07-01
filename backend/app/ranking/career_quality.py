@@ -45,8 +45,14 @@ class CareerQualityLayer:
                 score -= 10.0
 
         # 2. Scope signal density per role
+        # Sort chronologically (oldest to newest) to ensure consistent progression checks
+        def _get_start_date(c):
+            sd = c.get("start_date")
+            return sd[:10] if sd else "9999-99-99"
+        sorted_career = sorted(career, key=_get_start_date)
+
         scope_scores = []
-        for role in career:
+        for role in sorted_career:
             desc = role.get("description", "").lower()
             if not desc:
                 continue

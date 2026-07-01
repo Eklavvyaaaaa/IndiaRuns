@@ -1,7 +1,7 @@
 import json
 import datetime
 
-REFERENCE_DATE = datetime.date(2025, 1, 1)
+REFERENCE_DATE = datetime.date.today()
 
 class BehavioralIntelligenceLayer:
     """
@@ -24,7 +24,7 @@ class BehavioralIntelligenceLayer:
         # 1. GitHub activity — external validation of actual work
         gh = signals.get("github_activity_score", -1)
         if gh > 0:
-            score += min(20.0, (gh / 10.0) * 20.0)
+            score += min(20.0, (gh / 100.0) * 20.0)
 
         # 2. Skill assessment scores — platform verified competence
         assessments = signals.get("skill_assessment_scores", {})

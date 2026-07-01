@@ -101,11 +101,11 @@ class RoleAlignmentLayer:
         import re
         jd_lower_text = jd_text.lower()
         exp_min = 0.0
-        range_match = re.search(r'(\d+)\s*[-–to]+\s*(\d+)\s*(?:\+?\s*)?years?', jd_lower_text)
+        range_match = re.search(r'(\d+)\s*[-–to]+\s*(\d+)\s*(?:\+?\s*)?years?(?:\s+of)?\s+(?:experience|exp)', jd_lower_text)
         if range_match:
             exp_min = float(range_match.group(1))
         else:
-            plus_match = re.search(r'(?:minimum|at least|min)?\s*(\d+)\s*\+?\s*years?', jd_lower_text)
+            plus_match = re.search(r'(?:minimum|at least|min)?\s*(\d+)\s*\+?\s*years?(?:\s+of)?\s+(?:experience|exp)', jd_lower_text)
             if plus_match:
                 exp_min = float(plus_match.group(1))
 

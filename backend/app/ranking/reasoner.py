@@ -289,10 +289,23 @@ class ReasoningEngine:
         elif "consistency" in weakest_name:
             reason = "mismatched title vs project history"
         elif "education" in weakest_name:
-            reason = "lacking elite pedigree"
+            reason = "unverifiable or non-traditional academic background"
         
         # Format values natively out of 10 for the summary
         str_val = round(strongest_val / 10.0, 1)
         weak_val = round(weakest_val / 10.0, 1)
         
-        return f"💡 Ranked #{rank} because of strong {strongest_name} ({str_val}/10) but lower {weakest_name} ({weak_val}/10) since {reason}."
+        base_explanation = f"💡 Ranked #{rank} because of strong {strongest_name} ({str_val}/10) but lower {weakest_name} ({weak_val}/10) since {reason}."
+        
+        penalties = []
+        hp_penalty = scores.get("honeypot_penalty", 0)
+        role_penalty = scores.get("role_penalty", 0)
+        if hp_penalty > 0:
+            penalties.append(f"-{hp_penalty} honeypot penalty")
+        if role_penalty > 0:
+            penalties.append(f"-{role_penalty} role mismatch penalty")
+            
+        if penalties:
+            return base_explanation + f" (Final score was reduced by {' and '.join(penalties)}.)"
+        
+        return base_explanation

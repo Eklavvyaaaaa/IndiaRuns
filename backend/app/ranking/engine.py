@@ -138,7 +138,7 @@ class RankingEngine:
             }
             
             # 4. Generate reasoning
-            bs = self.blindspot.compute(jd_text, row, semantic_fit)
+            bs = self.blindspot.compute(jd_text, row, final_score)
             reasons = self.reasoner.generate(row, scores, jd_text, bs)
             
             if role_warnings:

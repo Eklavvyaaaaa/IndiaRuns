@@ -26,11 +26,12 @@ def call_llm(prompt: str, retries: int = 3) -> str:
             is_unavailable = "503" in error_str or "unavailable" in error_str.lower() or "overloaded" in error_str.lower()
             
             if is_rate_limit or is_unavailable:
-                wait = 10 if is_unavailable else (60 if attempt == 0 else 120)
-                print(f"[LLM] Temporary error/Rate limit ({e}), waiting {wait}s before retry {attempt + 1}/{retries}...")
-                time.sleep(wait)
+                if attempt < retries:
+                    wait = 10 if is_unavailable else (60 if attempt == 0 else 120)
+                    print(f"[LLM] Temporary error/Rate limit ({e}), waiting {wait}s before retry {attempt + 1}/{retries}...")
+                    time.sleep(wait)
             else:
                 print(f"[LLM] Call failed: {e}")
-                return ""
+                raise
     print("[LLM] All retries exhausted, returning fallback.")
     return ""

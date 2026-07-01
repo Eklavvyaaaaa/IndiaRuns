@@ -19,10 +19,10 @@ class HoneypotDetector:
         for family in self.taxonomy["technical_families"]:
             self.tech_words.update(self.taxonomy["families"][family]["core_tech_words"])
 
-    def detect(self, candidate_row: dict) -> tuple[bool, float, float]:
+    def detect(self, candidate_row: dict) -> tuple[bool, float, float, list[str]]:
         """
         Runs comprehensive data integrity and honeypot detection rules.
-        Returns (is_quarantined, penalty_score, profile_reliability)
+        Returns (is_quarantined, penalty_score, profile_reliability, gaming_flags)
         where profile_reliability is 0.0 to 1.0.
         """
         is_quarantined = False
@@ -140,15 +140,18 @@ class HoneypotDetector:
             penalty += 15.0
             
         # Keyword density anomalies
+        import re
         total_words = len(career_corpus.split()) + len(summary_corpus.split())
         if total_words > 50 and skills:
-            top_skill = skills[0].get("name", "").lower()
-            if top_skill and len(top_skill) > 2:
-                skill_count = career_corpus.count(top_skill) + summary_corpus.count(top_skill)
-                # If a single word appears more than once every 15 words, it's keyword stuffing
-                if skill_count > 0 and (total_words / skill_count) < 15:
-                    gaming_flags.append(f"Anti-Gaming: Keyword density anomaly detected for '{top_skill}' (appears {skill_count} times).")
-                    penalty += 15.0
+            for s in skills[:5]:
+                skill_name = s.get("name", "").lower()
+                if skill_name and len(skill_name) > 2:
+                    pattern = r'\b' + re.escape(skill_name) + r'\b'
+                    skill_count = len(re.findall(pattern, career_corpus)) + len(re.findall(pattern, summary_corpus))
+                    # If a single word appears more than once every 15 words, it's keyword stuffing
+                    if skill_count > 0 and (total_words / skill_count) < 15:
+                        gaming_flags.append(f"Anti-Gaming: Keyword density anomaly detected for '{skill_name}' (appears {skill_count} times).")
+                        penalty += 15.0
                     
         # Mismatched skill claims vs project evidence
         expert_unsupported = 0
