@@ -243,3 +243,69 @@ class ReasoningEngine:
             elif missing:
                 reasons.append(f"Technical Copilot: Gap identified in {', '.join(missing[:2])}. Ask: 'Have you had exposure to {missing[0]} in your past roles?'")
         return reasons
+
+    def generate_explainable_summary(self, rank: int, candidate: dict) -> str:
+        """
+        Generate a cohesive, plain-English summary explaining the absolute 'why'
+        for the candidate's ranking position. Example: 'Ranked #2 because of strong
+        domain depth (9.1/10) but relocation risk (4/10) since no prior cross-city moves.'
+        """
+        scores = candidate.get("scores", {})
+        
+        # Dimensions excluding final_score and penalties
+        dims = {
+            "semantic matching": scores.get("semantic_fit", 0),
+            "JD requirement coverage": scores.get("jd_requirement_fit", 0),
+            "retrieval intelligence": scores.get("retrieval_intelligence", 0),
+            "production readiness": scores.get("production_readiness", 0),
+            "skill trust": scores.get("skill_trust", 0),
+            "behavioral signals": scores.get("behavioral_intelligence", 0),
+            "career quality": scores.get("career_quality", 0),
+            "profile consistency": scores.get("consistency", 0),
+            "education": scores.get("education", 0)
+        }
+        
+        strongest_name = max(dims, key=dims.get)
+        strongest_val = dims[strongest_name]
+        
+        weakest_name = min(dims, key=dims.get)
+        weakest_val = dims[weakest_name]
+        
+        reason = ""
+        if "semantic" in weakest_name:
+            reason = "general phrasing mismatch with the JD"
+        elif "JD requirement" in weakest_name:
+            reason = "missing specific tools or certifications"
+        elif "retrieval" in weakest_name:
+            reason = "limited search/ranking depth"
+        elif "production" in weakest_name:
+            reason = "limited high-scale deployment experience"
+        elif "skill trust" in weakest_name:
+            reason = "insufficient validation of claims"
+        elif "behavioral" in weakest_name:
+            reason = "low recruiter response rate or recent inactivity"
+        elif "career" in weakest_name:
+            reason = "shorter tenures or entirely IT services background"
+        elif "consistency" in weakest_name:
+            reason = "mismatched title vs project history"
+        elif "education" in weakest_name:
+            reason = "unverifiable or non-traditional academic background"
+        
+        # Format values natively out of 10 for the summary
+        str_val = round(strongest_val / 10.0, 1)
+        weak_val = round(weakest_val / 10.0, 1)
+        
+        base_explanation = f"💡 Ranked #{rank} because of strong {strongest_name} ({str_val}/10) but lower {weakest_name} ({weak_val}/10) since {reason}."
+        
+        penalties = []
+        hp_penalty = scores.get("honeypot_penalty", 0)
+        role_penalty = scores.get("role_penalty", 0)
+        if hp_penalty > 0:
+            penalties.append(f"-{hp_penalty} honeypot penalty")
+        if role_penalty > 0:
+            penalties.append(f"-{role_penalty} role mismatch penalty")
+            
+        if penalties:
+            return base_explanation + f" (Final score was reduced by {' and '.join(penalties)}.)"
+        
+        return base_explanation

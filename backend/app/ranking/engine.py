@@ -26,7 +26,7 @@ class RankingEngine:
         self.consistency = ConsistencyLayer()
         self.education = EducationLayer()
         self.jd_adaptive = JDAdaptiveWeightEngine()
-        self.jd_requirement_fit = JDRequirementFitLayer(self.semantic.model)
+        self.jd_requirement_fit = JDRequirementFitLayer()
         self.role_alignment = RoleAlignmentLayer()
         self.honeypot = HoneypotDetector()
         self.blindspot = BlindSpotEngine()
@@ -92,7 +92,7 @@ class RankingEngine:
             semantic_fit = max(0.0, min(100.0, sem_score * 100.0))
             
             # 2. Data Integrity & Role Alignment check
-            is_quarantined, hp_penalty, profile_reliability = self.honeypot.detect(row)
+            is_quarantined, hp_penalty, profile_reliability, gaming_flags = self.honeypot.detect(row)
             
             # Compute production readiness early for role alignment disqualifiers
             pr_score = self.production.score(row)
@@ -119,15 +119,10 @@ class RankingEngine:
                 (cq_score * weights["cq"]) +
                 (cs_score * weights["cs"]) +
                 (edu_score * weights["edu"])
-            ) - hp_penalty - role_penalty
-            
-            if is_quarantined:
-                final_score = 0.0
-                
-            final_score = max(0.0, final_score)
+            ) - (hp_penalty + role_penalty)
             
             scores = {
-                "final_score": round(final_score, 1),
+                "final_score": round(max(0.0, final_score), 1),
                 "semantic_fit": round(semantic_fit, 1),
                 "jd_requirement_fit": round(jrf_score, 1),
                 "retrieval_intelligence": round(ri_score, 1),
@@ -137,20 +132,21 @@ class RankingEngine:
                 "career_quality": round(cq_score, 1),
                 "consistency": round(cs_score, 1),
                 "education": round(edu_score, 1),
-                "profile_reliability": round(profile_reliability * 100.0, 1),
+                "profile_reliability": round(profile_reliability, 2),
                 "honeypot_penalty": round(hp_penalty, 1),
                 "role_penalty": round(role_penalty, 1)
             }
             
-            # 4. Blindspot
+            # 4. Generate reasoning
             bs = self.blindspot.compute(jd_text, row, final_score)
-            
-            # 5. Reasoning
             reasons = self.reasoner.generate(row, scores, jd_text, bs)
             
             if role_warnings:
                 for w in role_warnings:
                     reasons.append(f"WARNING: {w}")
+            
+            if gaming_flags:
+                reasons.extend(gaming_flags)
 
             active_signals = [
                 s["label"] for s in jd_analysis.get("signals", [])
@@ -181,5 +177,11 @@ class RankingEngine:
             
         # Sort by final score
         results.sort(key=lambda x: x["scores"]["final_score"], reverse=True)
+        
+        # 5. Explainable AI Layer (Generate plain-English 'why')
+        for idx, res in enumerate(results[:top_k]):
+            rank = idx + 1
+            explanation = self.reasoner.generate_explainable_summary(rank, res)
+            res["reasoning"].insert(0, explanation)
         
         return results[:top_k]

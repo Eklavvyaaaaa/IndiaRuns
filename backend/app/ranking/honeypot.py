@@ -19,10 +19,10 @@ class HoneypotDetector:
         for family in self.taxonomy["technical_families"]:
             self.tech_words.update(self.taxonomy["families"][family]["core_tech_words"])
 
-    def detect(self, candidate_row: dict) -> tuple[bool, float, float]:
+    def detect(self, candidate_row: dict) -> tuple[bool, float, float, list[str]]:
         """
         Runs comprehensive data integrity and honeypot detection rules.
-        Returns (is_quarantined, penalty_score, profile_reliability)
+        Returns (is_quarantined, penalty_score, profile_reliability, gaming_flags)
         where profile_reliability is 0.0 to 1.0.
         """
         is_quarantined = False
@@ -125,10 +125,50 @@ class HoneypotDetector:
         # Calculate Reliability
         profile_reliability = max(0.0, 1.0 - reliability_deductions)
         
+        # 6. Anti-Gaming Detection (LLM phrasing & Keyword Stuffing)
+        gaming_flags = []
+        
+        # LLM phrasing detection
+        llm_phrases = [
+            "delve into", "a testament to", "fostering", "innovative solutions",
+            "seamless integration", "spearheaded", "synergy", "as an ai language model",
+            "tapestry", "unwavering", "catalyst"
+        ]
+        llm_hits = sum(1 for phrase in llm_phrases if phrase in summary_corpus or phrase in career_corpus)
+        if llm_hits >= 3:
+            gaming_flags.append(f"Anti-Gaming: Flagged for generic LLM-style phrasing ({llm_hits} typical AI generation phrases found).")
+            penalty += 15.0
+            
+        # Keyword density anomalies
+        import re
+        total_words = len(career_corpus.split()) + len(summary_corpus.split())
+        if total_words > 50 and skills:
+            for s in skills[:5]:
+                skill_name = s.get("name", "").lower()
+                if skill_name and len(skill_name) > 2:
+                    pattern = r'\b' + re.escape(skill_name) + r'\b'
+                    skill_count = len(re.findall(pattern, career_corpus)) + len(re.findall(pattern, summary_corpus))
+                    # If a single word appears more than once every 15 words, it's keyword stuffing
+                    if skill_count > 0 and (total_words / skill_count) < 15:
+                        gaming_flags.append(f"Anti-Gaming: Keyword density anomaly detected for '{skill_name}' (appears {skill_count} times).")
+                        penalty += 15.0
+                    
+        # Mismatched skill claims vs project evidence
+        expert_unsupported = 0
+        for s in skills:
+            if s.get("proficiency", "").lower() == "expert":
+                s_name = s.get("name", "").lower()
+                if s_name and len(s_name) > 2 and s_name not in career_corpus:
+                    expert_unsupported += 1
+        
+        if expert_unsupported >= 2:
+             gaming_flags.append(f"Anti-Gaming: Mismatched claims ({expert_unsupported} 'expert' skills with no project evidence).")
+             penalty += 20.0
+
         # Quarantine Check
         if profile_reliability < 0.3 or penalty >= 100.0:
             is_quarantined = True
             
         penalty = min(100.0, penalty)
         
-        return is_quarantined, penalty, profile_reliability
+        return is_quarantined, penalty, profile_reliability, gaming_flags
