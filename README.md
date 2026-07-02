@@ -109,6 +109,3 @@ IndiaRuns/
 ├── evaluate.py                 ← Evaluation harness
 └── submission.csv              ← Final ranked output
 
-
-**Team Dev Dynasty
-Track 1: Data & AI Challenge
