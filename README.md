@@ -110,5 +110,5 @@ IndiaRuns/
 └── submission.csv              ← Final ranked output
 
 
-**Team Tesseract-26** — Redrob AI × Hack2skill Hackathon
+**Team Dev Dynasty
 Track 1: Data & AI Challenge
